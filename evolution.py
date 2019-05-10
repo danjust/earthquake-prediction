@@ -23,11 +23,7 @@ class model():
             layerlist,
             dropoutlist,
             num_all_features,
-            mutationrate_features = .05,
-            mutationrate_layers = .05,
-            mutationrate_layersize = .05,
             std_layersize = 8,
-            mutationrate_dropout = .05,
             std_dropoutrate = .1):
 
         self.featureset = featureset
@@ -35,11 +31,7 @@ class model():
         self.dropoutlist = dropoutlist
         self.num_all_features = num_all_features
 
-        self.mutationrate_features = mutationrate_features
-        self.mutationrate_layers = mutationrate_layers
-        self.mutationrate_layersize = mutationrate_layersize
         self.std_layersize = std_layersize
-        self.mutationrate_dropout = mutationrate_dropout
         self.std_dropoutrate = std_dropoutrate
 
         self.num_features = len(featureset)
@@ -47,60 +39,53 @@ class model():
         self.available_features = set(range(num_all_features))-featureset
 
     def mutate(self):
-        # add or remove one feature
-        change_num_features = get_random(
-                self.mutationrate_features/2,
-                self.mutationrate_features/2
-        )
-        if change_num_features==1:
+        mutation_list = [
+                'add_feature',
+                'remove_feature',
+                'add_layer',
+                'remove_layer',
+                'change_layer',
+                'change_dropout']
+        mutation = np.random.choice(mutation_list)
+
+        if mutation=='add_feature':
             new_feature = np.random.choice(list(self.available_features))
             self.featureset.add(new_feature)
             self.num_features = self.num_features+1
-            self.available_features = self.available_features-self.featureset
-        if change_num_features==-1:
+            self.available_features = self.available_features-{new_feature}
+        elif mutation=='remove_feature':
             if self.num_features>1:
-                remove_feature = np.random.choice(list(featureset))
-                self.featureset = self.featureset - set(remove_feature)
+                remove_feature = np.random.choice(list(self.featureset))
+                self.featureset = self.featureset - {remove_feature}
                 self.num_features = self.num_features-1
                 self.available_features.add(remove_feature)
-
-        # add or remove one layer
-        change_num_layers = get_random(
-                self.mutationrate_layers/2,
-                self.mutationrate_layers/2
-        )
-        if change_num_layers==1:
+        elif mutation=='add_layer':
             self.layerlist.append(self.layerlist[self.num_layers-1])
-            self.dropoutlist.append(self.dropoutlist[self.num_layers-1])
+            self.dropoutlist.append(0)
             self.num_layers = self.num_layers+1
-        if change_num_layers==-1:
-            if self.num_features>1:
+        elif mutation=='remove_layer':
+            if self.num_layers>1:
                 self.layerlist.pop(self.num_layers-1)
                 self.dropoutlist.pop(self.num_layers-1)
                 self.num_layers = self.num_layers-1
-
-        # change units per layer
-        for i in range(self.num_layers):
-            if np.random.rand()<self.mutationrate_layersize:
-                self.layerlist[i] = int(np.round(np.random.normal(
-                        self.layerlist[i],
-                        self.std_layersize
-                )))
-                if self.layerlist[i]<1:
-                    self.layerlist[i]=1
-
-        # change dropoutrate
-        for i in range(self.num_layers):
-            if np.random.rand()<self.mutationrate_dropout:
-                self.dropoutlist[i] = int(np.round(np.random.normal(
-                        self.dropoutlist[i],
-                        self.std_dropoutrate
-                )))
-                if self.dropoutlist[i]<0:
-                    self.dropoutlist[i]=0
-                if self.dropoutlist[i]>0.5:
-                    self.dropoutlist[i]=0.5
-
+        elif mutation=='change_layer':
+            layer_to_change = np.random.randint(self.num_layers)
+            self.layerlist[layer_to_change] = int(np.round(np.random.normal(
+                    self.layerlist[layer_to_change],
+                    self.std_layersize
+            )))
+            if self.layerlist[layer_to_change]<1:
+                self.layerlist[layer_to_change]=1
+        elif mutation=='change_dropout':
+            dropout_to_change = np.random.randint(self.num_layers)
+            self.dropoutlist[dropout_to_change] = int(np.round(np.random.normal(
+                    self.dropoutlist[dropout_to_change],
+                    self.std_dropoutrate
+            )))
+            if self.dropoutlist[dropout_to_change]<0:
+                self.dropoutlist[dropout_to_change]=0
+            if self.dropoutlist[dropout_to_change]>0.5:
+                self.dropoutlist[dropout_to_change]=0.5
 
     def build(self):
         """Function to create the model architecture"""
