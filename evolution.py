@@ -49,10 +49,11 @@ class model():
         mutation = np.random.choice(mutation_list)
 
         if mutation=='add_feature':
-            new_feature = np.random.choice(list(self.available_features))
-            self.featureset.add(new_feature)
-            self.num_features = self.num_features+1
-            self.available_features = self.available_features-{new_feature}
+            if self.num_features<self.num_all_features:
+                new_feature = np.random.choice(list(self.available_features))
+                self.featureset.add(new_feature)
+                self.num_features = self.num_features+1
+                self.available_features = self.available_features-{new_feature}
         elif mutation=='remove_feature':
             if self.num_features>1:
                 remove_feature = np.random.choice(list(self.featureset))
