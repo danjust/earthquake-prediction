@@ -9,7 +9,7 @@ from tensorflow.keras.layers import Dropout
 class model():
     """Model class"""
 
-    def build(self, num_features, layerlist, dropoutlist):
+    def build(self, num_features, layerlist, dropoutlist, reg_constant):
         """Function to create the model architecture"""
         num_layers = len(layerlist)
         model = Sequential()
@@ -18,6 +18,7 @@ class model():
                     units=1,
                     input_dim=num_features,
                     activation='relu',
+                    kernel_regularizer=regularizers.l2(reg_constant),
                     use_bias=False,
             ))
         else:
@@ -25,6 +26,7 @@ class model():
                     units=layerlist[0],
                     input_dim=num_features,
                     activation='relu',
+                    kernel_regularizer=regularizers.l2(reg_constant),
             ))
             if dropoutlist[0]>0:
                 model.add(Dropout(rate=dropoutlist[0]))
@@ -33,13 +35,15 @@ class model():
                 model.add(Dense(
                         units=layerlist[i],
                         activation='relu',
+                        kernel_regularizer=regularizers.l2(reg_constant),
                 ))
                 if dropoutlist[i]>0:
                     model.add(Dropout(rate=dropoutlist[i]))
-                    
+
             model.add(Dense(
                     units=1,
                     activation='relu',
+                    kernel_regularizer=regularizers.l2(reg_constant),
                     use_bias=False,
             ))
         return model
