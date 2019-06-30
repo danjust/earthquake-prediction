@@ -22,6 +22,9 @@ class model():
             featureset,
             layerlist,
             dropoutlist,
+            reg_constant,
+            learning_rate,
+            lr_decay,
             num_all_features,
             std_layersize = 8,
             std_dropoutrate = .1):
@@ -29,6 +32,9 @@ class model():
         self.featureset = featureset
         self.layerlist = layerlist
         self.dropoutlist = dropoutlist
+        self.reg_constant = reg_constant
+        self.learning_rate = learning_rate
+        self.lr_decay = lr_decay
         self.num_all_features = num_all_features
 
         self.std_layersize = std_layersize
@@ -45,7 +51,11 @@ class model():
                 'add_layer',
                 'remove_layer',
                 'change_layer',
-                'change_dropout']
+                'change_dropout',
+                'change_reg_constant',
+                'change_learning_rate',
+                'change_lr_decay'
+                ]
         mutation = np.random.choice(mutation_list)
 
         if mutation=='add_feature':
@@ -79,14 +89,21 @@ class model():
                 self.layerlist[layer_to_change]=1
         elif mutation=='change_dropout':
             dropout_to_change = np.random.randint(self.num_layers)
-            self.dropoutlist[dropout_to_change] = int(np.round(np.random.normal(
+            self.dropoutlist[dropout_to_change] = np.random.normal(
                     self.dropoutlist[dropout_to_change],
                     self.std_dropoutrate
-            )))
+            )
             if self.dropoutlist[dropout_to_change]<0:
                 self.dropoutlist[dropout_to_change]=0
             if self.dropoutlist[dropout_to_change]>0.5:
                 self.dropoutlist[dropout_to_change]=0.5
+        elif mutation=='change_reg_constant':
+            self.reg_constant = self.reg_constant*np.random.choice([0.5,2])
+        elif mutation=='change_learning_rate':
+            self.learning_rate = self.learning_rate*np.random.choice([0.5,2])
+        elif mutation=='change_lr_decay':
+            self.lr_decay = self.lr_decay*np.random.choice([0.5,2])
+
 
     def build(self):
         """Function to create the model architecture"""
